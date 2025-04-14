@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Portfolio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        header, section, footer {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        header {
+            background: #f4f4f4;
+            text-align: center;
+        }
+
+        header img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .social-icons a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .projects img {
+            width: 100%;
+            height: auto;
+            max-height: 250px;
+            object-fit: cover;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .projects img:hover {
+            transform: scale(1.05);
+        }
+
+        form input, form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        form button {
+            padding: 10px 20px;
+            border: none;
+            background: #333;
+            color: white;
+            border-radius: 5px;
+        }
+
+        .dark-mode {
+            background: #121212;
+            color: white;
+        }
+
+        .toggle-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 768px) {
+            header, section, footer {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <button class="toggle-btn" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+
+    <header id="home">
+        <h1 id="profile-name"></h1>
+        <img id="profile-photo" src="" alt="Profile Photo">
+        <p id="profile-role"></p>
+        <div class="social-icons" id="social-links"></div>
+    </header>
+
+    <section id="about">
+        <h2>About Me</h2>
+        <p id="about-description"></p>
+        <p><strong>Education:</strong> <span id="about-education"></span></p>
+        <p><strong>Interests:</strong> <span id="about-interests"></span></p>
+        <div id="skills"></div>
+    </section>
+
+    <section id="projects">
+        <h2>Projects</h2>
+        <div class="projects" id="projects-container"></div>
+    </section>
+
+    <section id="contact">
+        <h2>Contact</h2>
+        <form id="contact-form">
+            <input type="text" id="name" placeholder="Your Name" required>
+            <input type="email" id="email" placeholder="Your Email" required>
+            <textarea id="message" placeholder="Your Message" required></textarea>
+            <button type="submit">Submit</button>
+            <p id="form-msg"></p>
+        </form>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 <span id="footer-name"></span>. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // Dynamic content data
+        const data = {
+            profile: {
+                name: "Javeed",
+                role: "Web Developer | Designer | Coder",
+                photo: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5OjcBCgoKDQwNGg8PGjclHyU3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3N//AABEIAJQAlAMBIgACEQEDEQH/xAAcAAABBQEBAQAAAAAAAAAAAAAEAAMFBgcCAQj/xAA+EAACAQMCAwUGBQMCBAcAAAABAgMABBEFIRIxQQYTIlFhFDJxgZGhByNCUrEzwdFi8FNykuEWJFSCsuLx/8QAGQEAAgMBAAAAAAAAAAAAAAAAAgQAAQMF/8QAIxEAAgICAgICAwEAAAAAAAAAAAECEQMhEjETQTJRBCJhcf/aAAwDAQACEQMRAD8A0WlSpU8c0VKlS+JxUIcySJEjySMFRFLMxOAAKzftF25mune30uT2W2GxmP8AUkHp+0f5qW7Zz3V/ZTnvDa6RCPHIdjcv6D9o6dWPIdRm6QMrDhRiW3UsuTj4UtmyPpDmDEvkwj2hZHL8U8jNzcJufn1p+N4GHDL3iZ/4qEffeuYYLl+TfVqKit7ldu8i+BkpZscPcPDGSD31seaEZK+o86WVDIYiTsTGwOcjqpr2WMxjiMZiY/rX3T8cbVHwy4mkibbDhl9Dz/mqISJmuJYl0r2mRbSNizIGwMncj4f760x7RHaqyQxBwDgrjEY+Pn8TvQJuuEPkkk8+metd25ZwCcbdR0+FFsrRJaf2i1XT5g0Ajt42O/DbgqfiPDn61qWi30t9aJJMsRLDIkgJKN8mAKn0P1NZJ4p8ItwVUbmTPLHQetT3ZXU7/SdTWDjNzZT+8uRx5816FvTr5ZrbFkp0xfNi5K0abTkUZlcKtKOIvwsviUgFSORFHWsfdEkjFMSmq0KQg2ciyjGMtmnA0VuMqRQ9xcsGIShWYsck0Ki5dmjnGOohL3rFsilQlKj4Iy5yFSpEOkjxyLwsppUS2C1ToVKlXMjrFG8jnCopYnyAqFFC7f3rveJAxHDCCYYjjhB5GVh1xyUHbIY+VUp7hRIwTMsjHxN5mnNbv7jU7iW/kPCLmQlfRRj+BgUzaIsUfF50hOVuzp448Y0O8E7jx8A8g2/2FCyytESHe326FRXF7cPIywQ8WW/SvM1N6L2G1HU4BP3ZKk7eIKv1PP1wKC0uzVJvor0l2ytmPCHqFY4Pypo3L98shIyMDyrU7L8L9PijDXl1LNLzIAwg9B1+p/xXM/YWCztWFnaGeXBCEsM5PNmJz9ANs+e9D5EF4pMytpWLkg8zmvVuJE/USPXep7tJ2UudAsbe4uDkyMQ+BgLywB/3qu+lGnaAacXTJiyzIAW3XqVcn6gVINbJwZjZozjIwxYH5H/NQNjJJbs0qELwjO/X0qahmSaISoSIWOJE/wCG37vh61GRGm9ke2PtsKadqGEv1HgkJ8M48x6+lWQ3EpO5rD7PUJdPv1PhMsTbBvdk64Pof+/MVsWm3cd/p8F3Bxd3KgZcnceYPqKZwtPsT/ITi9dBJJJJNeUqVMCgqVKlUIPXwKXTeElTtx450zUhqUitbqgZVYOTg1HxZcbYPqOVZ45WqNssalYqje05dezOrtFnjFjPw4554DUq0ZGwOTXptneM8SZQjDAjYg7UbaozV2YP2jX2a+ayHuWyiHbqQBxH/qLfX0oQzflnyVsH61I9uVMfarVUKkN3xOCP3BX/AL1CwAy3AhGfzSF+ZNIvR047SLf2B0NNT1MTTjijVeJvhyx89q2G3VUCxxqFUDAUDAAHSss7Ia3pfZea5tLy87wS44WRf6Y3zxHOPpv6VfdH7WdnNSkK2usW5kC54JA0Zx/7gN6Xkm2M8klRNMtMnnRrJtkYI8xTEkWdxzoKZcZIhu0WlwavpklrcDYkEHyP+zWQ9sNEk0r2d5Vwx/LLqNpMcm+OP4rbLnKqVPOqp230ttV0OaOIZmi/Mj9ccxRRlTDceUWY0WZhgk1KWE3s9yGIzFLsynlUWdiQQQR0NFYYqGTdTzH96YE1oI1Yd3ICGOwxnzHMVrP4duZOydqef5kvXl4yf71kk8gu7cAMBNHsVb9YrVfwvyOycZIOGmkKk+QIH8g1rg+Rh+T8S14pYr3JPrXawyNyXam7QjVjVKnjbS/tpVXJF8X9BwRnZhJKsgweIYoKLu7dzFjhGdgKcSe08bosgZUzUaJ45plKmTJ6NSsHscy9WTsDW5HhAz1rpp0TkygeVRGfl8KSjiPWt3j32LrK/SM//GPSUkuLXV7MAtJiC5A6Ee438g/Kqt2U0SS/vI2RF7kLxGVufUAjyAI5c6s3bmz07UGlvIb0JesoQxuxIYZABHkev9utWD8MtJ4uzqTOrKzxDHmvX+T9qRyTXo6eGDSuZFJoGgaNHx6ncyzyPyWVuvkFGAPTP1qu3ml9n72VZ9MlmgJ37vAOB5r8Oo32qyX3Y6eLV57m+RtTSaNkRmI4osg8hyyNsHp5eUbb9kLfT3n1C4un4kXPCYwqKds8WD7vp8PKgTX2au360S/ZLXE0r/yup6oZYICyhwkj8Z2UZIB5AD6H5TmsdsbGGyMmkTxXM2Rsf0jO+QcHlmoj8PIVvdLuXdMIlwyKOeVCr1qK1CxB7aTW8cZ7m3iWXZTwjiP/AOUN7IoR9MZmbtxqs/fwTTxRH3ERUXb14utdXF72u0mIT3ypLEp8QwrHHrwkfxXOrdqtX0ho5Fjb2eRQ8ZkYAuhJAOCDj3TtsRt8KkdI7YrqRFtrFv7LNKhMW3hkHLn1322q6dbRP1ukzPtdW1ugdQsgFDN+Yi8gT1/350Bbjihx16Vdtf0K3SC4nt07pyPGo90+v+/KqOqPbvwOR4txwnIyKODtA5oOMtnE3emTgccTnYEcz86+hez2hHStDsrLIQQxBW/5jux+ZJNZR+HWiR672oRpxm3sAly+D+oMCg+GQa3OV1VcuBimMdroSyxUjmC3ijXLAMfOnO8xsoAoQ3Q/Qua9eaVVz3QFG02ZqUF0F97jnilVdvNQeOYrwE7dKVXw/pPJ/CRUXAilzCqN+liOfpTJjuyVSWNB1BUUTeh1tX7+6VlJGD5Gg9NCJdqwuFkPDyBrFOmbSVqglbKY81xTt7CINMuip/MFvJjHPPCaKZ25k0xd3EUVuzSkcBGCPPNaSlKRnCEYMzXU4ZLWySGBI1N2Ze+ldA36iMb+gqy9gdTjs9HtbG+Bgfu1EEzAiOcb4wx24vQ+W2egaTxW7m2ucPH+kOnEr9OJT8OdS/ZkQvo0Vu8atFh4jGwyMKxAz57DrSC09nVyfvC0TNxw4YsMDzqq6/fi8tZtN07hmaX8uaQAFIweYJ5FjywOXM+srcaHpjggWqKv7B7v/Tyrm4s1t7dHsUDSwnKR4AHIjYehIPyqnV6BgtBfZ7SBpmiiFeEYXfHVick1VtQtoLbtlb6hed6Lbh7qfhkKjBUhSw6qCR/PSj49W12xtWgureOa75rwghCPPqfPzpzT5zrEfHNDidIyJ1HiXJPI7VL+i+D3YTqGhQ3ACTfmKAQrFQdvXNRd12SsLmRJb+SWZYh4EwFAxyAxiioku7Ad3p9zi3Hu286l1T0Vs8QHpkgdMUFe3mvSqUitLNf9YlZx9MCoXGL9ohe1Pd2scNpCcNIRtn3UByc/YfP0rO7TStQ1FBNa2zGMsSHbCjz61b+0dlNZQh7u5M97cDDv9gPudgAKOsrWC40yWJVuIrmCEd2mSEIB2wPtvRKXFBTx8+yb/C3TW0awkWWFjdTgSOfIfpHyH3Jq8PFJPgzEKPIVCdnyIbuRDKCvdgAeWOtTZniB96nYXx0cnIly2xxI4ox4V38zXbSZG/8AFMrIrnwZJ9KE1W6msrbjKjc4HpVtP2VcUqRDXtx3d3Mp6MaVAvKJnZ5BxMTuaVZ2aFiujaiyYjLgvh8dKEtpIFnU20bK+NyaPuJOK0DR2SDL7of5piFZpmC+zLEPMVcO9g5L46CRcSMueP7UDqgluLORAckjlUotoABkn1xXotUwcnfpW7lEXUJlDj055YXMkp5+4TyqU0Im2WS3JPhfiGSTsR/kGj30+JJZTIzLl+dM3EESDvYHJlTJKg7svUfwflSeSKaH8MqasmCwZQajNa1m10e3WSd071ziONmxk+Z9KJsphPbqykHptUP2h7O6fqcy3M9tBJOowRIMcQ+PmKWHYxV0L/xLxOs09sMouDlSNvnU5b3CzwJNC+UcZU1Spey9sySIrahbpKvCywXh4WHkQSQRU92U0ybSdPNtLdyXEYbMfeDdB5Z61br0HKFdol5I0k99c+tA3CRxvwx5OOdHSv3aFhucVCaldLbROxbxNy360JUStapCuq68VkWUwwrwgx8w/wDfb+alhbGGAxWwdpVVS0kgw23IfXB+VHW+iwKilnHekZc94w8XyNdi1EHexBtmHNRitlDezCf5NpqIXpgRL4CaMKO6Hu8h6VNGW0zju6hrSNXvY0QniK43o5oij92zrn1NO40mtnLytqXQb7XFGPyl3qJ15pbizYkHAOaIWRIz4gC3Sm9Vumk0+VFVRtRta0ZqVvZXYsheWa9pBgoxtSpYcLPqInMESzXAjkDHfi6UFaNNDdA+1LMuOWeVd6teWLLHEHaXB545Uxp1vHKxnt0YA7ZIooVy2DktRZJ+1S9KFvNX9k4e9c8THYAURJbzqQO7ZifKoHtJEySQSFD3gyADW8nFK0KxUuSTD2uva7OWfJyG2zTOmhpZw0gHDzBHnTVorHSI+I4Zm5V3p7lJljZgPFsAKVuxtKlQx3smlX80zqTpskuGYD+gSAdx+3JPwqfiaKRQWCSIwyDjIpi3SOW5u7eTxLNFlgTy4T/9/tVcuItQ0eUrYT8MWTiNxxIfl0Pwpaapj+JvJGi0y2tuwJEYU/6TikOgqrLrevqBx2Fuc8nVGI+zV1xazqC4uphbRHmkY4Sfvn70BpwfTDdX1eKJu5hficdE3NRFohutQgNyRvIo4RuFGd8V1JbQWv5cQJYc2PnTumRccpkJxwcjjODnnVp72auP6OiUVRJ/UIVSduFTtQ+rzm3mECycKlN2xvTjpcQFreVOFgcrk5yvoetdXL24tOKUx97w+HIzmmbRyVFt0Q15qtzAOKJ1PdjCuDufWpvT76KSJpZ5Rx8Knc/WhLNrGaFzN3Ik4eRFcWqW72UxkaJZVB4B5npRRypeypYm/RKaRe2j6jxTSLwZwOPlRetyWkuVtSh4l3wetVrSEE2kSNdiJLoE8IzRNjHbvZSNO0QmA2GeZqeTd2V4dVRyLVyNwPrSpzToraW2DTvGr5OQWNe1XJBcX9EVNdCC+hsySWkXIxV17MgyQxBzyycelVGYRG6DOgMijwt1FXDspE4h7x2zxcqzx9m2XosO2KqnatklntFjTLZPPbNWmUFkIBwSKrmq6Tc3DRGKZAYwSHPnWrMCHtLq4WJkNsG4T5V2t7e+8ljHt6UXa6lY6VZhdVu4I5mYgIWyz/8AKoyTy8qkBcPcwLJBA8Cu3Cjzx8LNtnIU7gY6nfblVFkRpDTvfzTTJwBIDkerMMf/ABNE3qo6YcZJ6USWEad2HLHOWdgAXOOeBt8qDmPE5OdqWm7Y5hi4oDWDu8hHIXyr0kKpJPLenHOASaBnYvz2WgY0gSYlnZh1JNP6WVWVlY4zih55I4sl2AA9aYWaUurQLw43DuKtJsucoxWy2TXFsYuCZgycgvCTv0x6/CuX0+xfS3nv8q54jGWYhkXoNv8AHXrzMRYcKBrq6cszHgjyNzn9oH02qbhiKMlzqeQ647i15lfIt6/YfHlvCOtnNyTt6I2HsrdSL3wmROIeGORSGA6ZI6/KqH2k1DXNAvpItWtYbSJtrdoAXE3wY7E+YwCPKtqg4zErSY4zuQOlNahp9pqdnJZ39vHPbyDxI4yPj6H1ovHH6K80/swSLtLds4lWYuuccLquD8QMfyKnrDWobsuZFWB2xgA5XPlnpVQ1a0trDXdRt9PdntoLl4gG3YKDgH18qH4xGwbJB5Aiqlji/RpHLJGipMd85znypVT7XtS9rCIHCOU2yUz/AHFeUDxmiyqjQ5CpmPgAKjmOdXXsxIrWaY6LWVT9qbOOWWORfzRthN8fE8qmbP8AEq2tLHgtNPcuiYMkrgKD645/CjhoxyO+jRtc1ay0i27+/uFijOwHNnPkB1rLtW7dar2g1BdI7OWsi96ccEWC+Opd+SDzx9arBm1rtrr0cBmkkmmbHF0jXqSOQUf73NbN2W7N2HZrTxbWa8crYM9w48czeZ9PIchWhl0VaLsxD2fitZ751n1K8nVZ5hnhROfAufkCf1ddsCrzqcMk1qwiJWVDxL/j1zvQfaPT/b7HlxPH4gPMdcevX5UDpms3USCG7hM/AoxKhAYj/UDt8wflQk/wEN7Ko/Pspg3+gcQ+1NNqC/8Apbs/CI/3qYuNStZFJaxnL+ZAH8GoyS7bOY7K4b4KB/JoHjRus8kCtcyynCWVwfVgFH3NctaXUoJlljt4+oHib6nanzNfyf07SOIeckuT9AKbNjcznN1eBh+2NMAfX/FRQRTzzYDItnbAmEd5IOc8u+Ph0+1dQWk9ywKgqh5ySD7gcz9vjUnBp9tAQyJxP+9/Efl5fKiJJFiXLtj+aKjNtsVpHFZeKAEzYwZn3YDyHRflRenRe1XBYklF8THzNC2dtcak3gDJbjmxHvVYYY4bSEIMIo5k7ZNEgWPmovX9Xj0nTri4JHFFEz/DAzXV1qSgFbfxH95Gw+FZ5+JOoNFos8fES0mEJzzLH/ANRspIyiCWYziQv+Y2Sx6EnnRLv3sTBfC43wx5UEAKKSFZE8TcQxnfmtQMGkPjO4PqKVPm0YHwkYryoQUDNNdsHJ8ZycbZOaOJ4ueyqcKo2ApUqhDTfwWtITBqN+Uzcnu4uI9F3JA+Jx9BWm0qVWA+xDmRUPq1pDFw3Ea8Lsd8cqVKqIgBTnnXtKlULZ7zzXn6QaVKoUC307wqAmAT1oS2HfXI70ls88nnSpVQRPm+nChIysaqMAIoGKHd3c5dmY+bHNKlVlHPlWZ/ibIzJbKTs07k/IYH8mlSqFlDP9Mt1DAfanbViJAOmcUqVQs8eZ+NgGIAPnSpUqhD/9k=",
+                social: [
+                    { icon: "fab fa-github", url: "https://github.com/johndoe" },
+                    { icon: "fab fa-linkedin", url: "https://linkedin.com/in/johndoe" },
+                    { icon: "fab fa-twitter", url: "https://twitter.com/johndoe" }
+                ]
+            },
+            about: {
+                description: "I am a passionate web developer with a knack for crafting modern, responsive user interfaces.",
+                education: "B.Tech in Computer Science",
+                interests: "Coding, UI/UX Design, Open Source",
+                skills: [
+                    { name: "HTML", value: 90 },
+                    { name: "CSS", value: 85 },
+                    { name: "JavaScript", value: 75 },
+                    { name: "React", value: 70 }
+                ]
+            },
+            projects: [
+                {
+                    title: "Personal Portfolio",
+                    image: "https://source.unsplash.com/800x400/?portfolio,developer",
+                    description: "Modern, dynamic personal website to showcase my work."
+                },
+                {
+                    title: "Task Tracker App",
+                    image: "https://source.unsplash.com/800x400/?app,tasks",
+                    description: "A full-featured to-do app using React and local storage."
+                },
+                {
+                    title: "Weather Forecast",
+                    image: "https://source.unsplash.com/800x400/?weather,forecast",
+                    description: "A live weather forecast app that pulls data from an external API."
+                }
+            ]
+        };
+
+        // Render functions
+        function renderProfile() {
+            const { name, role, photo, social } = data.profile;
+            document.getElementById("profile-name").textContent = name;
+            document.getElementById("profile-role").textContent = role;
+            document.getElementById("profile-photo").src = photo;
+            document.getElementById("footer-name").textContent = name;
+
+            const socialContainer = document.getElementById("social-links");
+            social.forEach(link => {
+                const a = document.createElement("a");
+                a.href = link.url;
+                a.target = "_blank";
+                a.innerHTML = `<i class="${link.icon}"></i>`;
+                socialContainer.appendChild(a);
+            });
+        }
+
+        function renderAbout() {
+            const { description, education, interests, skills } = data.about;
+            document.getElementById("about-description").textContent = description;
+            document.getElementById("about-education").textContent = education;
+            document.getElementById("about-interests").textContent = interests;
+
+            const skillContainer = document.getElementById("skills");
+            skills.forEach(skill => {
+                const skillElement = document.createElement("div");
+                skillElement.innerHTML = `<label>${skill.name}</label><progress value="${skill.value}" max="100"></progress>`;
+                skillContainer.appendChild(skillElement);
+            });
+        }
+
+        function renderProjects() {
+            const projectContainer = document.getElementById("projects-container");
+            data.projects.forEach(project => {
+                const div = document.createElement("div");
+                div.innerHTML = `
+                    <h3>${project.title}</h3>
+                    <img src="${project.image}" alt="${project.title}">
+                    <p>${project.description}</p>
+                `;
+                projectContainer.appendChild(div);
+            });
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        function validateForm(e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const message = document.getElementById('message').value.trim();
+            const msg = document.getElementById('form-msg');
+
+            if (name && email && message) {
+                msg.textContent = "Message sent successfully!";
+                msg.style.color = "green";
+            } else {
+                msg.textContent = "Please fill in all fields correctly.";
+                msg.style.color = "red";
+            }
+        }
+
+        // Initialize everything on load
+        document.getElementById("contact-form").addEventListener("submit", validateForm);
+        renderProfile();
+        renderAbout();
+        renderProjects();
+    </script>
+</body>
+
+</html>
